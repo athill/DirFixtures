@@ -2,23 +2,24 @@ import os, shutil, json
 from pprint import pprint 
 
 class ScaffoldDirs:
-	
-	# Example structure. An array of dicts. required names are type and name. Type is either 'file' or 'dir'.
+	count = 0
+	# Example structure. An dict of dicts. The only required attributes is type. Type is either 'file' or 'dir'.
 	# If type is file, there is an optional 'content' key for the content of the file (default is '')
 	# If type is dir, there is an optional 'children' key which mirrors the rules of the larger structure
 	# TODO structure should be dict, rather than list. name as key makes sense, as 
-	_structure = [{ 'name': 'A', 
-					'type': 'dir', 
-					'children': [ {'name': 'B', 'type': 'dir', 
-									'children': [
-										{ 'name': 'a.txt', 'type': 'file', 'content': 'test a'},
-										{ 'name': 'b.txt', 'type': 'file', 'content': 'test b'}
-								]}
-
-					]
-				},
-				{ 'name': 'c.txt', 'type': 'file' }
-	]
+	_structure = {
+		'A': { 'type': 'dir', 
+			'children': { 
+				'B': { 'type': 'dir', 
+						'children': {
+							'a.txt': { 'type': 'file', 'content': 'test a'},
+							'b.txt': { 'type': 'file', 'content': 'test b'}
+						}
+					}
+			}
+		},
+		'c.txt': { 'type': 'file' }
+	}
 	_parent = '.'
 
 	def __init__(self, structure=None, parent=None):
@@ -62,18 +63,23 @@ class ScaffoldDirs:
 			'structure': self.structure,
 			'parent': self.parent
 		}
+		# self.count = self.count+1
+		# if self.count > 10: 
+		# 	exit()
 		opts = self.extend(defaults, opts)
-		pprint(opts)
-		for item in opts['structure']:
-			name = os.path.join(opts['parent'], item['name'])
-			if item['type'] == 'dir':
-				if not os.path.exists(name):
-					os.mkdir(name)
-				if 'children' in item:
-					self.build({ 'structure': item['children'], 'parent': name })
+		for name,atts in opts['structure'].items():
+			pprint(name)
+			pprint(atts)
+			path = os.path.join(opts['parent'], name)
+
+			if atts['type'] == 'dir':
+				if not os.path.exists(path):
+					os.mkdir(path)
+				if 'children' in atts:
+					self.build({ 'structure': atts['children'], 'parent': path })
 			else :
-				content = item['content'] if 'content' in item else ''
-				with open (name, 'w') as f: f.write (content)
+				content = atts['content'] if 'content' in atts else ''
+				with open (path, 'w') as f: f.write (content)
 	
 	def destroy(self, opts={}):
 		"""Deletes directory structure defined by structure under directory parent
@@ -104,7 +110,8 @@ class ScaffoldDirs:
 		opts = self.extend(defaults, opts)
 		for instance in opts['instances']:
 			name = os.path.join(opts['parent'], instance)
-			os.mkdir(name)
+			if not os.path.exists(name):
+				os.mkdir(name)
 			self.build({'structure': opts['structure'], 'parent': name})
 		
 	def destroys(self, opts={}):
@@ -125,16 +132,29 @@ class ScaffoldDirs:
 		"""Creates structure based on an existing directory and returns it.
 		Can be used to set structure or export as json
 		"""
+		dirname = dirname.replace('~', os.path.expanduser("~"), 1)
+		
+		if os.path.isfile(dirname):
+			return []
+		pprint(dirname)
+		self.count = self.count + 1
+		if self.count > 15: return []
 		for item in os.listdir(dirname):
+
 			if item in ['.', '..']:
 				continue
 			name = os.path.join(dirname, item)
 			if os.path.isfile(name):
 				with open(name, 'r') as f:
 					content = f.read()
+				pprint(name)
 				structure.append({ 'name': item, 'type': 'file', 'content': content })
 			elif os.path.isdir(name):
-				structure.append({ 'name': item, 'type': 'dir', 'children': self.clone(name) })
+				children = self.clone(name)
+				# pprint(children)
+				# exit()
+				structure.append({ 'name': item, 'type': 'dir', 'children': '' })
+		pprint(structure)
 		return structure
 
 	def extend(self, defaults, opts):
@@ -150,4 +170,8 @@ class ScaffoldDirs:
 
 if __name__ == "__main__":
 	b = ScaffoldDirs()
-	b.destroys()
+	# s = b.clone('~/Code/diveintopython-5.4')
+	# s = b.clone('local')
+	# pprint(s)
+	# b.structure = s
+	b.build()
