@@ -63,15 +63,9 @@ class ScaffoldDirs:
 			'structure': self.structure,
 			'parent': self.parent
 		}
-		# self.count = self.count+1
-		# if self.count > 10: 
-		# 	exit()
 		opts = self.extend(defaults, opts)
 		for name,atts in opts['structure'].items():
-			pprint(name)
-			pprint(atts)
 			path = os.path.join(opts['parent'], name)
-
 			if atts['type'] == 'dir':
 				if not os.path.exists(path):
 					os.mkdir(path)
@@ -89,14 +83,14 @@ class ScaffoldDirs:
 			'parent': self.parent
 		}
 		opts = self.extend(defaults, opts)
-		for item in opts['structure']:
-			name = os.path.join(opts['parent'], item['name'])
-			if not os.path.exists(name):
+		for name,atts in opts['structure'].items():
+			path = os.path.join(opts['parent'], name)
+			if not os.path.exists(path):
 				continue
-			if (item['type'] == 'dir'):
-				shutil.rmtree(name)
+			if (atts['type'] == 'dir'):
+				shutil.rmtree(path)
 			else:
-				os.remove(name)
+				os.remove(path)
 
 	def builds(self, opts={}):
 		"""Creates multiple directory structures defined by structure each instance under directory parent
@@ -174,4 +168,5 @@ if __name__ == "__main__":
 	# s = b.clone('local')
 	# pprint(s)
 	# b.structure = s
-	b.build()
+	# b.build()
+	b.destroy()
