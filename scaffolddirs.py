@@ -118,7 +118,7 @@ class ScaffoldDirs:
 		}
 		opts = self.extend(defaults, opts)
 		for instance in opts['instances']:
-			structure = [{ 'name': instance, 'type': 'dir', 'children': opts['structure'] }]
+			structure = { instance: {'type': 'dir', 'children': opts['structure'] } }
 			self.destroy({'structure': structure, 'parent': opts['parent'] })
 
 
@@ -168,5 +168,5 @@ if __name__ == "__main__":
 	# s = b.clone('local')
 	# pprint(s)
 	# b.structure = s
-	b.builds()
-	# b.destroy()
+	# b.builds()
+	b.destroys()
