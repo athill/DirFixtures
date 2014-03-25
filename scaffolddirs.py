@@ -122,33 +122,30 @@ class ScaffoldDirs:
 			self.destroy({'structure': structure, 'parent': opts['parent'] })
 
 
-	def clone(self, dirname, structure=[]):
+	def clone(self, dirname):
 		"""Creates structure based on an existing directory and returns it.
 		Can be used to set structure or export as json
 		"""
 		dirname = dirname.replace('~', os.path.expanduser("~"), 1)
-		
+		structure = {}
 		if os.path.isfile(dirname):
 			return []
-		pprint(dirname)
+		# pprint(dirname)
 		self.count = self.count + 1
 		if self.count > 15: return []
-		for item in os.listdir(dirname):
-
-			if item in ['.', '..']:
+		for name in os.listdir(dirname):
+			if name in ['.', '..']:
 				continue
-			name = os.path.join(dirname, item)
-			if os.path.isfile(name):
-				with open(name, 'r') as f:
+			path = os.path.join(dirname, name)
+			if os.path.isfile(path):
+				with open(path, 'r') as f:
 					content = f.read()
-				pprint(name)
-				structure.append({ 'name': item, 'type': 'file', 'content': content })
-			elif os.path.isdir(name):
-				children = self.clone(name)
-				# pprint(children)
-				# exit()
-				structure.append({ 'name': item, 'type': 'dir', 'children': '' })
-		pprint(structure)
+				# pprint(name)
+				structure[name] = { 'type': 'file', 'content': content }
+			elif os.path.isdir(path):
+				children = self.clone(path)
+				structure[name] = { 'type': 'dir', 'content': children }
+		# pprint(structure)
 		return structure
 
 	def extend(self, defaults, opts):
@@ -165,8 +162,8 @@ class ScaffoldDirs:
 if __name__ == "__main__":
 	b = ScaffoldDirs()
 	# s = b.clone('~/Code/diveintopython-5.4')
-	# s = b.clone('local')
-	# pprint(s)
+	s = b.clone('local')
+	pprint(s)
 	# b.structure = s
 	# b.builds()
-	b.destroys()
+	# b.destroys()
