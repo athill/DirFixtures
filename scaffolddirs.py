@@ -168,5 +168,5 @@ if __name__ == "__main__":
 	# s = b.clone('local')
 	# pprint(s)
 	# b.structure = s
-	# b.build()
-	b.destroy()
+	b.builds()
+	# b.destroy()
