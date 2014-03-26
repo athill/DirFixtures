@@ -1,7 +1,7 @@
 import os, shutil, json
 from pprint import pprint 
 
-class ScaffoldDirs:
+class DirFixtures:
 	count = 0
 	# Example structure. An dict of dicts. The only required attributes is type. Type is either 'file' or 'dir'.
 	# If type is file, there is an optional 'content' key for the content of the file (default is '')
@@ -22,17 +22,25 @@ class ScaffoldDirs:
 	}
 	_parent = '.'
 
-	def __init__(self, structure=None, parent=None):
-		if parent != None:
-			self._parent = parent
+	_instances = ['local', 'remote']
+
+	def __init__(self, structure=None, parent=None, instances=None):
+		# structure
 		if structure != None:
 			if type(structure) is list:
 				self._structure = structure
 			else:
 				with open(structure) as fp:
 					self._structure = json.load(fp)
+		# parent
+		if parent != None:
+			self._parent = parent
+		#instances
+		if instances != None:
+			self._instances = instances
 	
-
+	#### Properties
+	# structure
 	@property
 	def structure(self):
 		"""Get the current structure."""
@@ -46,6 +54,7 @@ class ScaffoldDirs:
 			with open(value) as fp:
 				self._structure = json.load(fp)
 
+	# parent
 	@property
 	def parent(self):
 		"""Get the current voltage."""
@@ -55,6 +64,17 @@ class ScaffoldDirs:
 	def parent(self, value):
 		self._parent = value
 
+	# instances
+	@property
+	def instances(self):
+		"""Get the current voltage."""
+		return self._instances
+
+	@instances.setter
+	def instances(self, value):
+		self._instances = value		
+
+	#### Core methods
 
 	def build(self, opts={}):
 		"""Creates directory structure defined by structure under directory parent
@@ -122,48 +142,47 @@ class ScaffoldDirs:
 			self.destroy({'structure': structure, 'parent': opts['parent'] })
 
 
-	def clone(self, dirname):
+	def clone(self, path):
 		"""Creates structure based on an existing directory and returns it.
 		Can be used to set structure or export as json
 		"""
-		dirname = dirname.replace('~', os.path.expanduser("~"), 1)
+		path = path.replace('~', os.path.expanduser("~"), 1)
 		structure = {}
-		if os.path.isfile(dirname):
+		if os.path.isfile(path):
 			return []
-		# pprint(dirname)
-		self.count = self.count + 1
-		if self.count > 15: return []
-		for name in os.listdir(dirname):
+		for name in os.listdir(path):
 			if name in ['.', '..']:
 				continue
-			path = os.path.join(dirname, name)
+			path = os.path.join(path, name)
 			if os.path.isfile(path):
 				with open(path, 'r') as f:
 					content = f.read()
-				# pprint(name)
 				structure[name] = { 'type': 'file', 'content': content }
 			elif os.path.isdir(path):
 				children = self.clone(path)
 				structure[name] = { 'type': 'dir', 'content': children }
-		# pprint(structure)
 		return structure
 
+	#### helpers
+
+	# trying to bring jQuery.extend to Python
 	def extend(self, defaults, opts):
 		"""Create a new dictionary with a's properties extended by b,
 		without overwriting.
 
 		>>> extend({'a':1,'b':2},{'b':3,'c':4})
 		{'a': 1, 'c': 4, 'b': 2}
+		http://stackoverflow.com/a/12697215
 		"""
 		return dict(defaults,**opts)
 
 
-
+#### main
 if __name__ == "__main__":
-	b = ScaffoldDirs()
+	df = DirFixtures()
 	# s = b.clone('~/Code/diveintopython-5.4')
-	s = b.clone('local')
-	pprint(s)
-	# b.structure = s
-	# b.builds()
-	# b.destroys()
+	# s = df.clone('local')
+	# pprint(s)
+	# df.structure = s
+	# df.builds()
+	# df.destroys()
