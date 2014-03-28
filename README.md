@@ -23,7 +23,7 @@ The essence of the functionality is in the *structure* datatype, a dict of dicts
 		'c.txt': { 'type': 'file' }
 	}
 
-Each key has a *type* attribute that is either *file* or *dir*. File types have an optional content attribute with the contents of the file. Dir types have an optional *children* attribute, that mirrors the parent structure. 
+Each key has a *type* attribute that is either *file* or *dir*. File types have an optional content attribute with the contents of the file. Dir types have an optional *children* attribute, that mirrors the parent structure. The structure above would generate the following directory tree.
 
 	A/
 	  \_B/
