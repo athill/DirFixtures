@@ -3,7 +3,7 @@ from pprint import pprint
 
 class DirFixtures:
 	count = 0
-	# Example structure. An dict of dicts. The only required attributes is type. Type is either 'file' or 'dir'.
+	# Example structure. A dict of dicts. The only required attributes is type. Type is either 'file' or 'dir'.
 	# If type is file, there is an optional 'content' key for the content of the file (default is '')
 	# If type is dir, there is an optional 'children' key which mirrors the rules of the larger structure
 	# TODO structure should be dict, rather than list. name as key makes sense, as 
@@ -20,24 +20,24 @@ class DirFixtures:
 		},
 		'c.txt': { 'type': 'file' }
 	}
+
+	# Where structure/instances will be created/destroyed
 	_parent = '.'
 
+	# Parent directories for copies of structure
 	_instances = ['local', 'remote']
 
 	def __init__(self, structure=None, parent=None, instances=None):
-		# structure
 		if structure != None:
-			if type(structure) is list:
-				self._structure = structure
-			else:
-				with open(structure) as fp:
-					self._structure = json.load(fp)
+			self._structure = self.getStructure(structure)
 		# parent
 		if parent != None:
 			self._parent = parent
 		#instances
 		if instances != None:
 			self._instances = instances
+
+
 	
 	#### Properties
 	# structure
@@ -48,11 +48,7 @@ class DirFixtures:
 
 	@structure.setter
 	def structure(self, value):
-		if type(value) is list:
-			self._structure = value
-		else:
-			with open(value) as fp:
-				self._structure = json.load(fp)
+		self._structure = getStructure(value)
 
 	# parent
 	@property
@@ -84,8 +80,10 @@ class DirFixtures:
 			'parent': self.parent
 		}
 		opts = self.extend(defaults, opts)
-		for name,atts in opts['structure'].items():
-			path = os.path.join(opts['parent'], name)
+		parent = self.fixPath(opts['parent'])
+		structure = self.getStructure(opts['structure'])
+		for name,atts in structure.items():
+			path = os.path.join(parent, name)
 			if atts['type'] == 'dir':
 				if not os.path.exists(path):
 					os.mkdir(path)
@@ -103,8 +101,10 @@ class DirFixtures:
 			'parent': self.parent
 		}
 		opts = self.extend(defaults, opts)
-		for name,atts in opts['structure'].items():
-			path = os.path.join(opts['parent'], name)
+		parent = self.fixPath(opts['parent'])
+		structure = self.getStructure(opts['structure'])
+		for name,atts in structure.items():
+			path = os.path.join(parent, name)
 			if not os.path.exists(path):
 				continue
 			if (atts['type'] == 'dir'):
@@ -120,8 +120,8 @@ class DirFixtures:
 			'parent': self.parent,
 			'instances': ['local', 'remote']
 		}
-
 		opts = self.extend(defaults, opts)
+		parent = self.fixPath(opts['parent'])
 		for instance in opts['instances']:
 			name = os.path.join(opts['parent'], instance)
 			if not os.path.exists(name):
@@ -137,6 +137,7 @@ class DirFixtures:
 			'instances': ['local', 'remote']
 		}
 		opts = self.extend(defaults, opts)
+		opts['parent'] = self.fixPath(opts['parent'])
 		for instance in opts['instances']:
 			structure = { instance: {'type': 'dir', 'children': opts['structure'] } }
 			self.destroy({'structure': structure, 'parent': opts['parent'] })
@@ -146,21 +147,21 @@ class DirFixtures:
 		"""Creates structure based on an existing directory and returns it.
 		Can be used to set structure or export as json
 		"""
-		path = path.replace('~', os.path.expanduser("~"), 1)
+		path = self.fixPath(path)
 		structure = {}
 		if os.path.isfile(path):
-			return []
+			return {}
 		for name in os.listdir(path):
 			if name in ['.', '..']:
 				continue
-			path = os.path.join(path, name)
-			if os.path.isfile(path):
-				with open(path, 'r') as f:
+			p = os.path.join(path, name)
+			if os.path.isfile(p):
+				with open(p, 'r') as f:
 					content = f.read()
 				structure[name] = { 'type': 'file', 'content': content }
-			elif os.path.isdir(path):
-				children = self.clone(path)
-				structure[name] = { 'type': 'dir', 'content': children }
+			elif os.path.isdir(p):
+				children = self.clone(p)
+				structure[name] = { 'type': 'dir', 'children': children }
 		return structure
 
 	#### helpers
@@ -176,13 +177,23 @@ class DirFixtures:
 		"""
 		return dict(defaults,**opts)
 
+	def fixPath(self, path):
+		return path.replace('~', os.path.expanduser("~"), 1)
+
+	def getStructure(self, structure):
+		s = {}
+		if type(structure) is dict:
+			s = structure
+		else:
+			with open(structure) as fp:
+				s = json.load(fp)		
+		return s
 
 #### main
 if __name__ == "__main__":
 	df = DirFixtures()
 	# s = b.clone('~/Code/diveintopython-5.4')
-	# s = df.clone('local')
 	# pprint(s)
 	# df.structure = s
 	# df.builds()
-	# df.destroys()
+	df.destroys()
