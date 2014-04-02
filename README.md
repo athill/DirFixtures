@@ -1,8 +1,8 @@
 #DirFixtures
 
-The point of this Python module is to easily create, delete, and copy directory structures. It came about because of the larger goal of my [unified-migration-theory](https://github.com/athill/unified-migration-theory) project (whose goal is to migrate files to production servers, based on Git syntax, to servers that don't pull from a repository) which got stonewalled when I discovered the difficulty of maintaining test directories manually. 
+The point of this Python module is to easily create, delete, and copy directory trees. It came about because of the larger goal of my [unified-migration-theory](https://github.com/athill/unified-migration-theory) project (whose goal is to migrate files to production servers, based on Git syntax, to servers that don't pull from a repository) which got stonewalled when I discovered the difficulty of maintaining test directories manually. 
 
-One epiphany later, I decided to get back to brass tacks and write a python module that could easily create and destroy directory structures for testing purposes. This is v0.8 of that module.
+One epiphany later, I decided to get back to brass tacks and write a python module that could easily create and destroy directory trees for testing purposes. This is v0.8 of that module.
 
 ## Concepts
 
@@ -35,7 +35,7 @@ Each key has a *type* attribute that is either *file* or *dir*. File types have 
 Structures can be generated from an existing directory via the clone() method or loaded from a JSON file
 
 ### Parent
-Parent is where to build the directory structure(s). The default is the current directory ('.'). It's a string and expects a *nix path (e.g., '/var/www/html/website', 'testdir/') to a directory. So this probably doesn't work on Windows. On *nix/Mac, however, the home directory ('~') is accounted for, so '~/projects/fixtures' would work.
+Parent is where to build the directory tree(s). The default is the current directory ('.'). It's a string and expects a \*nix path (e.g., '/var/www/html/website', 'testdir/') to a directory. So this probably doesn't work on Windows. On \*nix/Mac, however, the home directory ('~') is accounted for, so '~/projects/fixtures' would work.
 
 ### Instances
 The *instances* attribute is used when building or destroying multiple copies of the same structure. It is a list whose default is ['local', 'remote']. Meaning under *parent*, the default strucure would produce
